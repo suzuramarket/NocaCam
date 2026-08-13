@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.TextureView
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.animateFloatAsState
@@ -16,6 +17,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -568,7 +570,7 @@ private fun FocusIndicator(x: Float, y: Float, modifier: Modifier) {
 }
 
 @Composable
-private fun UnsupportedBanner(message: String) {
+private fun BoxScope.UnsupportedBanner(message: String) {
     Row(
         modifier = Modifier.align(Alignment.TopCenter).padding(top = 108.dp).clip(RoundedCornerShape(18.dp)).background(Color.Black.copy(alpha = 0.65f)).padding(horizontal = 13.dp, vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically,
