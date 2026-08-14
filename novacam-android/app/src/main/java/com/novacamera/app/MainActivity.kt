@@ -125,12 +125,17 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         cameraEngine = CameraEngine(this)
         setContent {
+            setContent {
+            var permissionGranted by remember { mutableStateOf(PermissionManager.cameraGranted(this)) }
             val permissionLauncher = rememberLauncherForActivityResult(
                 ActivityResultContracts.RequestMultiplePermissions(),
-            ) { }
+            ) { permissionGranted = PermissionManager.cameraGranted(this) }
             NovaCamApp(
                 cameraEngine = cameraEngine,
+                permissionGranted = permissionGranted,
                 onRequestPermission = { permissionLauncher.launch(PermissionManager.requiredPermissions()) },
+            )
+            }
             )
         }
     }
@@ -144,6 +149,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 private fun NovaCamApp(
     cameraEngine: CameraEngine,
+    permissionGranted: Boolean,
     onRequestPermission: () -> Unit,
 ) {
     val context = LocalContext.current
@@ -166,7 +172,13 @@ private fun NovaCamApp(
     var processing by remember { mutableStateOf<String?>(null) }
     var processingProgress by remember { mutableFloatStateOf(0f) }
     var toast by remember { mutableStateOf<String?>(null) }
-    var activeConfig by remember { mutableStateOf(configManager.active()) }
+    var activeConfig by remember {
+        mutableStateOf(
+            configManager.list().find { it.name == settingsManager.activeConfigName }
+                ?.let { configManager.activate(it) }
+                ?: configManager.active(),
+        )
+    }
 
     LaunchedEffect(livePhoto) {
         cameraEngine.setLivePhotoEnabled(livePhoto)
@@ -187,7 +199,7 @@ private fun NovaCamApp(
         return
     }
 
-    if (!PermissionManager.cameraGranted(context)) {
+    if (!permissionGranted) {
         PermissionScreen(onRequestPermission)
         return
     }
@@ -332,7 +344,9 @@ private fun NovaCamApp(
             configs = configManager.list(),
             active = activeConfig,
             onActivate = {
+                onActivate = {
                 activeConfig = configManager.activate(it)
+                settingsManager.activeConfigName = it.name
                 toast = "${it.name} aktif ✓"
                 showConfig = false
             },
